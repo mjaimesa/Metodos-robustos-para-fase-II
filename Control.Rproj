@@ -1,13 +1,2768 @@
-Version: 1.0
+library(qcc)
+n<-5
+c4<-function(x){
+  if(x<344){
+    return((2/(x-1))^(1/2)*gamma(x/2)/gamma((x-1)/2))
+  }
+  return(1)
+}
+TM<-function(x){
+  tm<-quantile(x,0.25)+2*median(x)+quantile(x,0.75)
+  return(tm/4)
+}
 
-RestoreWorkspace: Default
-SaveWorkspace: Default
-AlwaysSaveHistory: Default
+############################ Escenario 1 5 1995 IC ########################################
 
-EnableCodeIndexing: Yes
-UseSpacesForTab: Yes
-NumSpacesForTab: 2
-Encoding: UTF-8
+# Misma fase I para todas las cartas 
+set.seed(1234)
+mediasf1<-rep(NA,5)
+varf1<-rep(NA,5)
+matf1<-matrix(NA,nrow = 5,ncol = 5)
+for(j in 1:5){
+  datosf1<-rnorm(5,0,1)
+  mediasf1[j]<-mean(datosf1)
+  varf1[j]<-var(datosf1)
+  matf1[j,]<-datosf1
+}
 
-RnwWeave: Sweave
-LaTeX: pdfLaTeX
+######### Media #######
+
+cfap1<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0
+  m2<-5
+  mediasf2<-mediasf1
+  varf2<-varf1
+  for(t in 1:1995){
+    xbartm1<-mean(mediasf2)
+    sdtm1<-sqrt(mean(varf2))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    datosf2<-rnorm(5,0,1) 
+    #Falsas alarmas
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf2<-c(mediasf2,mean(datosf2))
+      varf2<-c(varf2,var(datosf2))
+      m2<-m2+1
+    } else {
+      fa<-fa+1
+    }
+  }
+  cfap1[i]<-fa/1995
+}
+
+
+######### TM ##########
+
+cfap1tm<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0
+  m2<-5
+  mediasf2<-mediasf1
+  varf2<-varf1
+  for(t in 1:1995){
+    xbartm1<-TM(mediasf2)
+    sdtm1<-sqrt(TM(varf2))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    datosf2<-rnorm(5,0,1) 
+    #Falsas alarmas
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf2<-c(mediasf2,mean(datosf2))
+      varf2<-c(varf2,var(datosf2))
+      m2<-m2+1
+    } else {
+      fa<-fa+1
+    }
+  }
+  cfap1tm[i]<-fa/1995
+}
+
+######### Mediana ##########
+
+cfap1med<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0
+  m2<-5
+  mediasf2<-mediasf1
+  varf2<-varf1
+  for(t in 1:1995){
+    xbartm1<-median(mediasf2)
+    sdtm1<-sqrt(median(varf2))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    datosf2<-rnorm(5,0,1) 
+    #Falsas alarmas
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf2<-c(mediasf2,mean(datosf2))
+      varf2<-c(varf2,var(datosf2))
+      m2<-m2+1
+    } else {
+      fa<-fa+1
+    }
+  }
+  cfap1med[i]<-fa/1995
+}
+
+
+######### Media recortada al 20 % ##########
+
+cfap1mr<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0
+  m2<-5
+  mediasf2<-mediasf1
+  varf2<-varf1
+  for(t in 1:1995){
+    xbartm1<-mean(mediasf2,trim=0.2)
+    sdtm1<-sqrt(mean(varf2,trim=0.2))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    datosf2<-rnorm(5,0,1) 
+    #Falsas alarmas
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf2<-c(mediasf2,mean(datosf2))
+      varf2<-c(varf2,var(datosf2))
+      m2<-m2+1
+    } else {
+      fa<-fa+1
+    }
+  }
+  cfap1mr[i]<-fa/1995
+}
+
+
+
+############################ Escenario 2 200 1800 IC ########################################
+
+#Sólo una fase I para las 1000 cartas
+set.seed(1234)
+mediasf12<-rep(NA,200)
+varf12<-rep(NA,200)
+matf12<-matrix(NA,nrow = 200,ncol = 5)
+for(j in 1:200){
+  datosf12<-rnorm(5,0,1)
+  mediasf12[j]<-mean(datosf12)
+  varf12[j]<-var(datosf12)
+  matf12[j,]<-datosf12
+}
+
+
+############### Media ############
+
+cfap2<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+1000)
+  fa<-0
+  m2<-200
+  mediasf22<-mediasf12
+  varf22<-varf12
+  for(t in 1:1800){
+    xbartm1<-mean(mediasf22)
+    sdtm1<-sqrt(mean(varf22))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    datosf2<-rnorm(5,0,1) 
+    #Falsas alarmas
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf22<-c(mediasf22,mean(datosf2))
+      varf22<-c(varf22,var(datosf2))
+      m2<-m2+1
+    } else {
+      fa<-fa+1
+    }
+  }
+  cfap2[i]<-fa/1800
+  
+}
+
+
+######### TM ##########
+
+cfap2tm<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+1000)
+  fa<-0
+  m2<-200
+  mediasf22<-mediasf12
+  varf22<-varf12
+  for(t in 1:1800){
+    xbartm1<-TM(mediasf22)
+    sdtm1<-sqrt(TM(varf22))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    datosf2<-rnorm(5,0,1) 
+    #Falsas alarmas
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf22<-c(mediasf22,mean(datosf2))
+      varf22<-c(varf22,var(datosf2))
+      m2<-m2+1
+    } else {
+      fa<-fa+1
+    }
+  }
+  cfap2tm[i]<-fa/1800
+  
+}
+
+
+######### Mediana ##########
+
+cfap2med<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+1000)
+  fa<-0
+  m2<-200
+  mediasf22<-mediasf12
+  varf22<-varf12
+  for(t in 1:1800){
+    xbartm1<-median(mediasf22)
+    sdtm1<-sqrt(median(varf22))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    datosf2<-rnorm(5,0,1) 
+    #Falsas alarmas
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf22<-c(mediasf22,mean(datosf2))
+      varf22<-c(varf22,var(datosf2))
+      m2<-m2+1
+    } else {
+      fa<-fa+1
+    }
+  }
+  cfap2med[i]<-fa/1800
+  
+}
+
+######### Media recortada al 20 % ##########
+
+cfap2mr<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+1000)
+  fa<-0
+  m2<-200
+  mediasf22<-mediasf12
+  varf22<-varf12
+  for(t in 1:1800){
+    xbartm1<-mean(mediasf22,trim=0.2)
+    sdtm1<-sqrt(mean(varf22,trim=0.2))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    datosf2<-rnorm(5,0,1) 
+    #Falsas alarmas
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf22<-c(mediasf22,mean(datosf2))
+      varf22<-c(varf22,var(datosf2))
+      m2<-m2+1
+    } else {
+      fa<-fa+1
+    }
+  }
+  cfap2mr[i]<-fa/1800
+  
+}
+
+
+############################ Escenario 3 5 1995 OOC  P=0.01, 𝛿 = 0.3 ########################################
+
+#Sólo una fase I para las 1000 cartas
+set.seed(1234)
+mediasf13<-rep(NA,5)
+varf13<-rep(NA,5)
+matf13<-matrix(NA,nrow = 5,ncol = 5)
+for(j in 1:5){
+  datosf13<-rnorm(5,0,1)
+  mediasf13[j]<-mean(datosf13)
+  varf13[j]<-var(datosf13)
+  matf13[j,]<-datosf13
+}
+
+######### Media ##########
+
+ctap3<-rep(NA,1000)
+cfap3<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf23<-mediasf13
+  varf23<-varf13
+  for(t in 1:1995){
+    xbartm1<-mean(mediasf23)
+    sdtm1<-sqrt(mean(varf23))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 820){
+      datosf2<-rnorm(5,0.3,1) 
+    }
+    if(t>820){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf23<-c(mediasf23,mean(datosf2))
+      varf23<-c(varf23,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=820){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>820){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap3[i]<-fa/1975 #falsas alarmas
+  ctap3[i]<-cs/20 #señales correctas
+}
+
+
+
+######### TM ##########
+
+ctap3tm<-rep(NA,1000)
+cfap3tm<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf23<-mediasf13
+  varf23<-varf13
+  for(t in 1:1995){
+    xbartm1<-TM(mediasf23)
+    sdtm1<-sqrt(TM(varf23))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 820){
+      datosf2<-rnorm(5,0.3,1) 
+    }
+    if(t>820){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf23<-c(mediasf23,mean(datosf2))
+      varf23<-c(varf23,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=820){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>820){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap3tm[i]<-fa/1975 #falsas alarmas
+  ctap3tm[i]<-cs/20 #señales correctas
+}
+
+######### Mediana ##########
+
+ctap3med<-rep(NA,1000)
+cfap3med<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf23<-mediasf13
+  varf23<-varf13
+  for(t in 1:1995){
+    xbartm1<-median(mediasf23)
+    sdtm1<-sqrt(median(varf23))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 820){
+      datosf2<-rnorm(5,0.3,1) 
+    }
+    if(t>820){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf23<-c(mediasf23,mean(datosf2))
+      varf23<-c(varf23,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=820){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>820){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap3med[i]<-fa/1975 #falsas alarmas
+  ctap3med[i]<-cs/20 #señales correctas
+}
+
+######### Media recortada al 20 % ##########
+
+ctap3mr<-rep(NA,1000)
+cfap3mr<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf23<-mediasf13
+  varf23<-varf13
+  for(t in 1:1995){
+    xbartm1<-mean(mediasf23,trim=0.2)
+    sdtm1<-sqrt(mean(varf23,trim=0.2))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 820){
+      datosf2<-rnorm(5,0.3,1) 
+    }
+    if(t>820){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf23<-c(mediasf23,mean(datosf2))
+      varf23<-c(varf23,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=820){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>820){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap3mr[i]<-fa/1975 #falsas alarmas
+  ctap3mr[i]<-cs/20 #señales correctas
+}
+
+
+
+############################ Escenario 4 200 1800 OOC  P=0.01, 𝛿 = 0.3 ########################################
+
+set.seed(1234)
+mediasf14<-rep(NA,200)
+varf14<-rep(NA,200)
+matf14<-matrix(NA,nrow = 200,ncol = 5)
+for(j in 1:200){
+  datosf14<-rnorm(5,0,1)
+  mediasf14[j]<-mean(datosf14)
+  varf14[j]<-var(datosf14)
+  matf14[j,]<-datosf14
+}
+
+######### Media ##########
+
+ctap4<-rep(NA,1000)
+cfap4<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf24<-mediasf14
+  varf24<-varf14
+  for(t in 1:1800){
+    xbartm1<-mean(mediasf24)
+    sdtm1<-sqrt(mean(varf24))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 818){
+      datosf2<-rnorm(5,0.3,1) 
+    }
+    if(t>818){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf24<-c(mediasf24,mean(datosf2))
+      varf24<-c(varf24,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=818){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>818){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap4[i]<-fa/1782 #falsas alarmas
+  ctap4[i]<-cs/18 #señales correctas
+}
+
+
+######### TM ##########
+
+ctap4tm<-rep(NA,1000)
+cfap4tm<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf24<-mediasf14
+  varf24<-varf14
+  for(t in 1:1800){
+    xbartm1<-TM(mediasf24)
+    sdtm1<-sqrt(TM(varf24))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 818){
+      datosf2<-rnorm(5,0.3,1) 
+    }
+    if(t>818){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf24<-c(mediasf24,mean(datosf2))
+      varf24<-c(varf24,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=818){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>818){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap4tm[i]<-fa/1782 #falsas alarmas
+  ctap4tm[i]<-cs/18 #señales correctas
+}
+
+######### Mediana ##########
+
+ctap4med<-rep(NA,1000)
+cfap4med<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf24<-mediasf14
+  varf24<-varf14
+  for(t in 1:1800){
+    xbartm1<-median(mediasf24)
+    sdtm1<-sqrt(median(varf24))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 818){
+      datosf2<-rnorm(5,0.3,1) 
+    }
+    if(t>818){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf24<-c(mediasf24,mean(datosf2))
+      varf24<-c(varf24,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=818){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>818){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap4med[i]<-fa/1782 #falsas alarmas
+  ctap4med[i]<-cs/18 #señales correctas
+}
+
+
+
+######### Media recortada al 20 % ##########
+
+ctap4mr<-rep(NA,1000)
+cfap4mr<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf24<-mediasf14
+  varf24<-varf14
+  for(t in 1:1800){
+    xbartm1<-mean(mediasf24,trim=0.2)
+    sdtm1<-sqrt(mean(varf24,trim=0.2))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 818){
+      datosf2<-rnorm(5,0.3,1) 
+    }
+    if(t>818){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf24<-c(mediasf24,mean(datosf2))
+      varf24<-c(varf24,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=818){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>818){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap4mr[i]<-fa/1782 #falsas alarmas
+  ctap4mr[i]<-cs/18 #señales correctas
+}
+
+
+############################ Escenario 5 5 1995 OOC  P=0.1, 𝛿 = 0.3 ########################################
+
+#Sólo una fase I para las 1000 cartas
+set.seed(1234)
+mediasf15<-rep(NA,5)
+varf15<-rep(NA,5)
+matf15<-matrix(NA,nrow = 5,ncol = 5)
+for(j in 1:5){
+  datosf15<-rnorm(5,0,1)
+  mediasf15[j]<-mean(datosf15)
+  varf15[j]<-var(datosf15)
+  matf15[j,]<-datosf15
+}
+
+
+######### Media ##########
+
+ctap5<-rep(NA,100)
+cfap5<-rep(NA,100)
+
+for(i in 1:100){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf25<-mediasf15
+  varf25<-varf15
+  for(t in 1:1995){
+    xbartm1<-mean(mediasf25)
+    sdtm1<-sqrt(mean(varf25))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 1000){
+      datosf2<-rnorm(5,0.3,1) 
+    }
+    if(t>1000){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf25<-c(mediasf25,mean(datosf2))
+      varf25<-c(varf25,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=1000){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>1000){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap5[i]<-fa/1795 #falsas alarmas
+  ctap5[i]<-cs/200 #señales correctas
+}
+
+
+######### TM ##########
+
+ctap5tm<-rep(NA,1000)
+cfap5tm<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf25<-mediasf15
+  varf25<-varf15
+  for(t in 1:1995){
+    xbartm1<-TM(mediasf25)
+    sdtm1<-sqrt(TM(varf25))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 1000){
+      datosf2<-rnorm(5,0.3,1) 
+    }
+    if(t>1000){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf25<-c(mediasf25,mean(datosf2))
+      varf25<-c(varf25,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=1000){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>1000){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap5tm[i]<-fa/1795 #falsas alarmas
+  ctap5tm[i]<-cs/200 #señales correctas
+}
+
+
+
+######### Mediana ##########
+
+ctap5med<-rep(NA,1000)
+cfap5med<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf25<-mediasf15
+  varf25<-varf15
+  for(t in 1:1995){
+    xbartm1<-median(mediasf25)
+    sdtm1<-sqrt(median(varf25))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 1000){
+      datosf2<-rnorm(5,0.3,1) 
+    }
+    if(t>1000){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf25<-c(mediasf25,mean(datosf2))
+      varf25<-c(varf25,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=1000){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>1000){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap5med[i]<-fa/1795 #falsas alarmas
+  ctap5med[i]<-cs/200 #señales correctas
+}
+
+
+######### Media recortada al 20 % ##########
+
+
+ctap5mr<-rep(NA,1000)
+cfap5mr<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf25<-mediasf15
+  varf25<-varf15
+  for(t in 1:1995){
+    xbartm1<-mean(mediasf25,trim=0.2)
+    sdtm1<-sqrt(mean(varf25,trim=0.2))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 1000){
+      datosf2<-rnorm(5,0.3,1) 
+    }
+    if(t>1000){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf25<-c(mediasf25,mean(datosf2))
+      varf25<-c(varf25,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=1000){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>1000){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap5mr[i]<-fa/1795 #falsas alarmas
+  ctap5mr[i]<-cs/200 #señales correctas
+}
+
+
+
+############################ Escenario 6 200 1800 OOC  P=0.1, 𝛿 = 0.3 ########################################
+
+set.seed(1234)
+mediasf16<-rep(NA,200)
+varf16<-rep(NA,200)
+matf16<-matrix(NA,nrow = 200,ncol = 5)
+for(j in 1:200){
+  datosf16<-rnorm(5,0,1)
+  mediasf16[j]<-mean(datosf16)
+  varf16[j]<-var(datosf16)
+  matf16[j,]<-datosf16
+}
+
+######### Media ##########
+
+ctap6<-rep(NA,100)
+cfap6<-rep(NA,100)
+
+for(i in 1:100){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf26<-mediasf16
+  varf26<-varf16
+  for(t in 1:1800){
+    xbartm1<-mean(mediasf26)
+    sdtm1<-sqrt(mean(varf26))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 980){
+      datosf2<-rnorm(5,0.3,1) 
+    }
+    if(t>980){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf26<-c(mediasf26,mean(datosf2))
+      varf26<-c(varf26,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=980){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>980){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap6[i]<-fa/1620 #falsas alarmas
+  ctap6[i]<-cs/180 #señales correctas
+  
+}
+
+
+
+######### TM ##########
+
+ctap6tm<-rep(NA,1000)
+cfap6tm<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf26<-mediasf16
+  varf26<-varf16
+  for(t in 1:1800){
+    xbartm1<-TM(mediasf26)
+    sdtm1<-sqrt(TM(varf26))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 980){
+      datosf2<-rnorm(5,0.3,1) 
+    }
+    if(t>980){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf26<-c(mediasf26,mean(datosf2))
+      varf26<-c(varf26,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=980){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>980){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap6tm[i]<-fa/1620 #falsas alarmas
+  ctap6tm[i]<-cs/180 #señales correctas
+  
+}
+
+
+
+######### Mediana ##########
+
+ctap6med<-rep(NA,1000)
+cfap6med<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf26<-mediasf16
+  varf26<-varf16
+  for(t in 1:1800){
+    xbartm1<-median(mediasf26)
+    sdtm1<-sqrt(median(varf26))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 980){
+      datosf2<-rnorm(5,0.3,1) 
+    }
+    if(t>980){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf26<-c(mediasf26,mean(datosf2))
+      varf26<-c(varf26,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=980){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>980){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap6med[i]<-fa/1620 #falsas alarmas
+  ctap6med[i]<-cs/180 #señales correctas
+  
+}
+
+
+######### Media recortada al 20 % ##########
+
+
+ctap6mr<-rep(NA,1000)
+cfap6mr<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf26<-mediasf16
+  varf26<-varf16
+  for(t in 1:1800){
+    xbartm1<-mean(mediasf26,trim=0.2)
+    sdtm1<-sqrt(mean(varf26,trim=0.2))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 980){
+      datosf2<-rnorm(5,0.3,1) 
+    }
+    if(t>980){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf26<-c(mediasf26,mean(datosf2))
+      varf26<-c(varf26,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=980){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>980){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap6mr[i]<-fa/1620 #falsas alarmas
+  ctap6mr[i]<-cs/180 #señales correctas
+  
+}
+
+
+
+############################ Escenario 7 5 1995 OOC  P=0.01, 𝛿 = 0.5 ########################################
+
+#Sólo una fase I para las 1000 cartas
+set.seed(1234)
+mediasf17<-rep(NA,5)
+varf17<-rep(NA,5)
+matf17<-matrix(NA,nrow = 5,ncol = 5)
+for(j in 1:5){
+  datosf17<-rnorm(5,0,1)
+  mediasf17[j]<-mean(datosf17)
+  varf17[j]<-var(datosf17)
+  matf17[j,]<-datosf17
+}
+
+######### Media ##########
+
+ctap7<-rep(NA,100)
+cfap7<-rep(NA,100)
+
+for(i in 1:100){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf27<-mediasf17
+  varf27<-varf17
+  for(t in 1:1995){
+    xbartm1<-mean(mediasf27)
+    sdtm1<-sqrt(mean(varf27))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 820){
+      datosf2<-rnorm(5,0.5,1) 
+    }
+    if(t>820){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf27<-c(mediasf27,mean(datosf2))
+      varf27<-c(varf27,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=820){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>820){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap7[i]<-fa/1975 #falsas alarmas
+  ctap7[i]<-cs/20 #señales correctas
+}
+
+
+######### TM ##########
+
+ctap7tm<-rep(NA,1000)
+cfap7tm<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf27<-mediasf17
+  varf27<-varf17
+  for(t in 1:1995){
+    xbartm1<-TM(mediasf27)
+    sdtm1<-sqrt(TM(varf27))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 820){
+      datosf2<-rnorm(5,0.5,1) 
+    }
+    if(t>820){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf27<-c(mediasf27,mean(datosf2))
+      varf27<-c(varf27,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=820){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>820){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap7tm[i]<-fa/1975 #falsas alarmas
+  ctap7tm[i]<-cs/20 #señales correctas
+}
+
+
+######### Mediana ##########
+
+ctap7med<-rep(NA,1000)
+cfap7med<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf27<-mediasf17
+  varf27<-varf17
+  for(t in 1:1995){
+    xbartm1<-median(mediasf27)
+    sdtm1<-sqrt(median(varf27))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 820){
+      datosf2<-rnorm(5,0.5,1) 
+    }
+    if(t>820){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf27<-c(mediasf27,mean(datosf2))
+      varf27<-c(varf27,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=820){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>820){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap7med[i]<-fa/1975 #falsas alarmas
+  ctap7med[i]<-cs/20 #señales correctas
+}
+
+
+
+
+######### Media recortada al 20 % ##########
+
+ctap7mr<-rep(NA,1000)
+cfap7mr<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf27<-mediasf17
+  varf27<-varf17
+  for(t in 1:1995){
+    xbartm1<-mean(mediasf27,trim=0.2)
+    sdtm1<-sqrt(mean(varf27,trim=0.2))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 820){
+      datosf2<-rnorm(5,0.5,1) 
+    }
+    if(t>820){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf27<-c(mediasf27,mean(datosf2))
+      varf27<-c(varf27,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=820){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>820){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap7mr[i]<-fa/1975 #falsas alarmas
+  ctap7mr[i]<-cs/20 #señales correctas
+}
+
+
+
+############################ Escenario 8 200 1800 OOC  P=0.01, 𝛿 = 0.5 ########################################
+
+set.seed(1234)
+mediasf18<-rep(NA,200)
+varf18<-rep(NA,200)
+matf18<-matrix(NA,nrow = 200,ncol = 5)
+for(j in 1:200){
+  datosf18<-rnorm(5,0,1)
+  mediasf18[j]<-mean(datosf18)
+  varf18[j]<-var(datosf18)
+  matf18[j,]<-datosf18
+}
+
+ctap8<-rep(NA,100)
+cfap8<-rep(NA,100)
+
+for(i in 1:100){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf28<-mediasf18
+  varf28<-varf18
+  for(t in 1:1800){
+    xbartm1<-mean(mediasf28)
+    sdtm1<-sqrt(mean(varf28))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 818){
+      datosf2<-rnorm(5,0.5,1) 
+    }
+    if(t>818){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf28<-c(mediasf28,mean(datosf2))
+      varf28<-c(varf28,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=818){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>818){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap8[i]<-fa/1782 #falsas alarmas
+  ctap8[i]<-cs/18 #señales correctas
+}
+
+
+######### TM ##########
+
+ctap8tm<-rep(NA,1000)
+cfap8tm<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf28<-mediasf18
+  varf28<-varf18
+  for(t in 1:1800){
+    xbartm1<-TM(mediasf28)
+    sdtm1<-sqrt(TM(varf28))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 818){
+      datosf2<-rnorm(5,0.5,1) 
+    }
+    if(t>818){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf28<-c(mediasf28,mean(datosf2))
+      varf28<-c(varf28,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=818){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>818){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap8tm[i]<-fa/1782 #falsas alarmas
+  ctap8tm[i]<-cs/18 #señales correctas
+}
+
+######### Mediana ##########
+
+ctap8med<-rep(NA,1000)
+cfap8med<-rep(NA,1000)
+
+for(i in 1:100){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf28<-mediasf18
+  varf28<-varf18
+  for(t in 1:1800){
+    xbartm1<-median(mediasf28)
+    sdtm1<-sqrt(median(varf28))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 818){
+      datosf2<-rnorm(5,0.5,1) 
+    }
+    if(t>818){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf28<-c(mediasf28,mean(datosf2))
+      varf28<-c(varf28,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=818){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>818){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap8med[i]<-fa/1782 #falsas alarmas
+  ctap8med[i]<-cs/18 #señales correctas
+}
+
+
+######### Media recortada al 20 % ##########
+
+ctap8mr<-rep(NA,1000)
+cfap8mr<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf28<-mediasf18
+  varf28<-varf18
+  for(t in 1:1800){
+    xbartm1<-mean(mediasf28,trim=0.2)
+    sdtm1<-sqrt(mean(varf28,trim=0.2))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 818){
+      datosf2<-rnorm(5,0.5,1) 
+    }
+    if(t>818){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf28<-c(mediasf28,mean(datosf2))
+      varf28<-c(varf28,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=818){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>818){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap8mr[i]<-fa/1782 #falsas alarmas
+  ctap8mr[i]<-cs/18 #señales correctas
+}
+
+
+############################ Escenario 9 5 1995 OOC  P=0.1, 𝛿 = 0.5 ########################################
+
+#Sólo una fase I para las 1000 cartas
+set.seed(1234)
+mediasf19<-rep(NA,5)
+varf19<-rep(NA,5)
+matf19<-matrix(NA,nrow = 5,ncol = 5)
+for(j in 1:5){
+  datosf19<-rnorm(5,0,1)
+  mediasf19[j]<-mean(datosf19)
+  varf19[j]<-var(datosf19)
+  matf19[j,]<-datosf19
+}
+
+######### Media ##########
+
+ctap9<-rep(NA,100)
+cfap9<-rep(NA,100)
+
+for(i in 1:100){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf29<-mediasf19
+  varf29<-varf19
+  for(t in 1:1995){
+    xbartm1<-mean(mediasf29)
+    sdtm1<-sqrt(mean(varf29))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 1000){
+      datosf2<-rnorm(5,0.5,1) 
+    }
+    if(t>1000){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf29<-c(mediasf29,mean(datosf2))
+      varf29<-c(varf29,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=1000){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>1000){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap9[i]<-fa/1795 #falsas alarmas
+  ctap9[i]<-cs/200 #señales correctas
+}
+
+
+######### TM ##########
+
+ctap9tm<-rep(NA,1000)
+cfap9tm<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf29<-mediasf19
+  varf29<-varf19
+  for(t in 1:1995){
+    xbartm1<-TM(mediasf29)
+    sdtm1<-sqrt(TM(varf29))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 1000){
+      datosf2<-rnorm(5,0.5,1) 
+    }
+    if(t>1000){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf29<-c(mediasf29,mean(datosf2))
+      varf29<-c(varf29,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=1000){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>1000){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap9tm[i]<-fa/1795 #falsas alarmas
+  ctap9tm[i]<-cs/200 #señales correctas
+}
+
+######### Mediana ##########
+
+ctap9med<-rep(NA,1000)
+cfap9med<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf29<-mediasf19
+  varf29<-varf19
+  for(t in 1:1995){
+    xbartm1<-median(mediasf29)
+    sdtm1<-sqrt(median(varf29))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 1000){
+      datosf2<-rnorm(5,0.5,1) 
+    }
+    if(t>1000){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf29<-c(mediasf29,mean(datosf2))
+      varf29<-c(varf29,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=1000){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>1000){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap9med[i]<-fa/1795 #falsas alarmas
+  ctap9med[i]<-cs/200 #señales correctas
+}
+
+
+######### Media recortada al 20 % ##########
+
+ctap9mr<-rep(NA,1000)
+cfap9mr<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf29<-mediasf19
+  varf29<-varf19
+  for(t in 1:1995){
+    xbartm1<-mean(mediasf29,trim=0.2)
+    sdtm1<-sqrt(mean(varf29,trim=0.2))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 1000){
+      datosf2<-rnorm(5,0.5,1) 
+    }
+    if(t>1000){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf29<-c(mediasf29,mean(datosf2))
+      varf29<-c(varf29,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=1000){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>1000){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap9mr[i]<-fa/1795 #falsas alarmas
+  ctap9mr[i]<-cs/200 #señales correctas
+}
+
+
+############################ Escenario 10 200 1800 OOC  P=0.1, 𝛿 = 0.5 ########################################
+
+set.seed(1234)
+mediasf110<-rep(NA,200)
+varf110<-rep(NA,200)
+matf110<-matrix(NA,nrow = 200,ncol = 5)
+for(j in 1:200){
+  datosf110<-rnorm(5,0,1)
+  mediasf110[j]<-mean(datosf110)
+  varf110[j]<-var(datosf110)
+  matf110[j,]<-datosf110
+}
+
+######### Media ##########
+
+ctap10<-rep(NA,100)
+cfap10<-rep(NA,100)
+
+for(i in 1:100){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf210<-mediasf110
+  varf210<-varf110
+  for(t in 1:1800){
+    xbartm1<-mean(mediasf210)
+    sdtm1<-sqrt(mean(varf210))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 980){
+      datosf2<-rnorm(5,0.5,1) 
+    }
+    if(t>980){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf210<-c(mediasf210,mean(datosf2))
+      varf210<-c(varf210,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=980){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>980){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap10[i]<-fa/1620 #falsas alarmas
+  ctap10[i]<-cs/180 #señales correctas
+  
+}
+
+
+######### TM ##########
+
+ctap10tm<-rep(NA,1000)
+cfap10tm<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf210<-mediasf110
+  varf210<-varf110
+  for(t in 1:1800){
+    xbartm1<-TM(mediasf210)
+    sdtm1<-sqrt(TM(varf210))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 980){
+      datosf2<-rnorm(5,0.5,1) 
+    }
+    if(t>980){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf210<-c(mediasf210,mean(datosf2))
+      varf210<-c(varf210,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=980){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>980){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap10tm[i]<-fa/1620 #falsas alarmas
+  ctap10tm[i]<-cs/180 #señales correctas
+  
+}
+
+######### Mediana ##########
+
+ctap10med<-rep(NA,1000)
+cfap10med<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf210<-mediasf110
+  varf210<-varf110
+  for(t in 1:1800){
+    xbartm1<-median(mediasf210)
+    sdtm1<-sqrt(median(varf210))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 980){
+      datosf2<-rnorm(5,0.5,1) 
+    }
+    if(t>980){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf210<-c(mediasf210,mean(datosf2))
+      varf210<-c(varf210,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=980){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>980){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap10med[i]<-fa/1620 #falsas alarmas
+  ctap10med[i]<-cs/180 #señales correctas
+  
+}
+
+######### Media recortada al 20 % ##########
+
+ctap10mr<-rep(NA,1000)
+cfap10mr<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf210<-mediasf110
+  varf210<-varf110
+  for(t in 1:1800){
+    xbartm1<-mean(mediasf210,trim=0.2)
+    sdtm1<-sqrt(mean(varf210,trim=0.2))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 980){
+      datosf2<-rnorm(5,0.5,1) 
+    }
+    if(t>980){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf210<-c(mediasf210,mean(datosf2))
+      varf210<-c(varf210,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=980){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>980){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap10mr[i]<-fa/1620 #falsas alarmas
+  ctap10mr[i]<-cs/180 #señales correctas
+  
+}
+
+
+############################ Escenario 11 5 1995 OOC  P=0.01, 𝛿 = 1 ########################################
+
+#Sólo una fase I para las 1000 cartas
+set.seed(1234)
+mediasf111<-rep(NA,5)
+varf111<-rep(NA,5)
+matf111<-matrix(NA,nrow = 5,ncol = 5)
+for(j in 1:5){
+  datosf111<-rnorm(5,0,1)
+  mediasf111[j]<-mean(datosf111)
+  varf111[j]<-var(datosf111)
+  matf111[j,]<-datosf111
+}
+
+######### TM ##########
+
+ctap11<-rep(NA,100)
+cfap11<-rep(NA,100)
+
+for(i in 1:100){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf211<-mediasf111
+  varf211<-varf111
+  for(t in 1:1995){
+    xbartm1<-mean(mediasf211)
+    sdtm1<-sqrt(mean(varf211))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 820){
+      datosf2<-rnorm(5,1,1) 
+    }
+    if(t>820){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf211<-c(mediasf211,mean(datosf2))
+      varf211<-c(varf211,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=820){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>820){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap11[i]<-fa/1975 #falsas alarmas
+  ctap11[i]<-cs/20 #señales correctas
+}
+
+
+
+
+######### TM ##########
+
+ctap11tm<-rep(NA,1000)
+cfap11tm<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf211<-mediasf111
+  varf211<-varf111
+  for(t in 1:1995){
+    xbartm1<-TM(mediasf211)
+    sdtm1<-sqrt(TM(varf211))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 820){
+      datosf2<-rnorm(5,1,1) 
+    }
+    if(t>820){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf211<-c(mediasf211,mean(datosf2))
+      varf211<-c(varf211,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=820){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>820){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap11tm[i]<-fa/1975 #falsas alarmas
+  ctap11tm[i]<-cs/20 #señales correctas
+}
+
+######### Mediana ##########
+
+ctap11med<-rep(NA,1000)
+cfap11med<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf211<-mediasf111
+  varf211<-varf111
+  for(t in 1:1995){
+    xbartm1<-median(mediasf211)
+    sdtm1<-sqrt(median(varf211))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 820){
+      datosf2<-rnorm(5,1,1) 
+    }
+    if(t>820){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf211<-c(mediasf211,mean(datosf2))
+      varf211<-c(varf211,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=820){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>820){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap11med[i]<-fa/1975 #falsas alarmas
+  ctap11med[i]<-cs/20 #señales correctas
+}
+
+
+######### Media recortada al 20 % ##########
+
+ctap11mr<-rep(NA,1000)
+cfap11mr<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf211<-mediasf111
+  varf211<-varf111
+  for(t in 1:1995){
+    xbartm1<-mean(mediasf211,trim=0.2)
+    sdtm1<-sqrt(mean(varf211,trim=0.2))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 820){
+      datosf2<-rnorm(5,1,1) 
+    }
+    if(t>820){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf211<-c(mediasf211,mean(datosf2))
+      varf211<-c(varf211,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=820){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>820){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap11mr[i]<-fa/1975 #falsas alarmas
+  ctap11mr[i]<-cs/20 #señales correctas
+}
+
+
+############################ Escenario 12 200 1800 OOC  P=0.01, 𝛿 = 1 ########################################
+
+set.seed(1234)
+mediasf112<-rep(NA,200)
+varf112<-rep(NA,200)
+matf112<-matrix(NA,nrow = 200,ncol = 5)
+for(j in 1:200){
+  datosf112<-rnorm(5,0,1)
+  mediasf112[j]<-mean(datosf112)
+  varf112[j]<-var(datosf112)
+  matf112[j,]<-datosf112
+}
+
+######### Media ##########
+
+ctap12<-rep(NA,100)
+cfap12<-rep(NA,100)
+
+for(i in 1:100){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf212<-mediasf112
+  varf212<-varf112
+  for(t in 1:1800){
+    xbartm1<-mean(mediasf212)
+    sdtm1<-sqrt(mean(varf212))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 818){
+      datosf2<-rnorm(5,1,1) 
+    }
+    if(t>818){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf212<-c(mediasf212,mean(datosf2))
+      varf212<-c(varf212,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=818){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>818){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap12[i]<-fa/1782 #falsas alarmas
+  ctap12[i]<-cs/18 #señales correctas
+}
+
+
+######### TM ##########
+
+ctap12tm<-rep(NA,1000)
+cfap12tm<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf212<-mediasf112
+  varf212<-varf112
+  for(t in 1:1800){
+    xbartm1<-TM(mediasf212)
+    sdtm1<-sqrt(TM(varf212))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 818){
+      datosf2<-rnorm(5,1,1) 
+    }
+    if(t>818){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf212<-c(mediasf212,mean(datosf2))
+      varf212<-c(varf212,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=818){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>818){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap12tm[i]<-fa/1782 #falsas alarmas
+  ctap12tm[i]<-cs/18 #señales correctas
+}
+
+
+######### Mediana ##########
+
+ctap12med<-rep(NA,1000)
+cfap12med<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf212<-mediasf112
+  varf212<-varf112
+  for(t in 1:1800){
+    xbartm1<-median(mediasf212)
+    sdtm1<-sqrt(median(varf212))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 818){
+      datosf2<-rnorm(5,1,1) 
+    }
+    if(t>818){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf212<-c(mediasf212,mean(datosf2))
+      varf212<-c(varf212,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=818){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>818){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap12med[i]<-fa/1782 #falsas alarmas
+  ctap12med[i]<-cs/18 #señales correctas
+}
+
+
+
+
+######### Media recortada al 20 % ##########
+
+ctap12mr<-rep(NA,1000)
+cfap12mr<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf212<-mediasf112
+  varf212<-varf112
+  for(t in 1:1800){
+    xbartm1<-mean(mediasf212,trim=0.2)
+    sdtm1<-sqrt(mean(varf212,trim=0.2))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 818){
+      datosf2<-rnorm(5,1,1) 
+    }
+    if(t>818){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf212<-c(mediasf212,mean(datosf2))
+      varf212<-c(varf212,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=818){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>818){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap12mr[i]<-fa/1782 #falsas alarmas
+  ctap12mr[i]<-cs/18 #señales correctas
+}
+
+
+############################ Escenario 13 5 1995 OOC  P=0.1, 𝛿 = 1 ########################################
+
+#Sólo una fase I para las 1000 cartas
+set.seed(1234)
+mediasf113<-rep(NA,5)
+varf113<-rep(NA,5)
+matf113<-matrix(NA,nrow = 5,ncol = 5)
+for(j in 1:5){
+  datosf113<-rnorm(5,0,1)
+  mediasf113[j]<-mean(datosf113)
+  varf113[j]<-var(datosf113)
+  matf113[j,]<-datosf113
+}
+
+######### Media ##########
+
+ctap13<-rep(NA,100)
+cfap13<-rep(NA,100)
+
+for(i in 1:100){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf213<-mediasf113
+  varf213<-varf113
+  for(t in 1:1995){
+    xbartm1<-mean(mediasf213)
+    sdtm1<-sqrt(mean(varf213))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 1000){
+      datosf2<-rnorm(5,1,1) 
+    }
+    if(t>1000){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf213<-c(mediasf213,mean(datosf2))
+      varf213<-c(varf213,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=1000){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>1000){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap13[i]<-fa/1795 #falsas alarmas
+  ctap13[i]<-cs/200 #señales correctas
+}
+
+
+
+######### TM ##########
+
+ctap13tm<-rep(NA,1000)
+cfap13tm<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf213<-mediasf113
+  varf213<-varf113
+  for(t in 1:1995){
+    xbartm1<-TM(mediasf213)
+    sdtm1<-sqrt(TM(varf213))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 1000){
+      datosf2<-rnorm(5,1,1) 
+    }
+    if(t>1000){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf213<-c(mediasf213,mean(datosf2))
+      varf213<-c(varf213,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=1000){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>1000){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap13tm[i]<-fa/1795 #falsas alarmas
+  ctap13tm[i]<-cs/200 #señales correctas
+}
+
+
+######### Mediana ##########
+
+ctap13med<-rep(NA,1000)
+cfap13med<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf213<-mediasf113
+  varf213<-varf113
+  for(t in 1:1995){
+    xbartm1<-median(mediasf213)
+    sdtm1<-sqrt(median(varf213))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 1000){
+      datosf2<-rnorm(5,1,1) 
+    }
+    if(t>1000){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf213<-c(mediasf213,mean(datosf2))
+      varf213<-c(varf213,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=1000){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>1000){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap13med[i]<-fa/1795 #falsas alarmas
+  ctap13med[i]<-cs/200 #señales correctas
+}
+
+
+######### Media recortada al 20 % ##########
+
+
+ctap13mr<-rep(NA,1000)
+cfap13mr<-rep(NA,1000)
+
+for(i in 1:1000){
+  set.seed(i+500)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-5
+  mediasf213<-mediasf113
+  varf213<-varf113
+  for(t in 1:1995){
+    xbartm1<-mean(mediasf213,trim=0.2)
+    sdtm1<-sqrt(mean(varf213,trim=0.2))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 1000){
+      datosf2<-rnorm(5,1,1) 
+    }
+    if(t>1000){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf213<-c(mediasf213,mean(datosf2))
+      varf213<-c(varf213,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=1000){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>1000){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap13mr[i]<-fa/1795 #falsas alarmas
+  ctap13mr[i]<-cs/200 #señales correctas
+}
+
+
+############################ Escenario 14 200 1800 OOC  P=0.1, 𝛿 = 1 ########################################
+
+set.seed(1234)
+mediasf114<-rep(NA,200)
+varf114<-rep(NA,200)
+matf114<-matrix(NA,nrow = 200,ncol = 5)
+for(j in 1:200){
+  datosf114<-rnorm(5,0,1)
+  mediasf114[j]<-mean(datosf114)
+  varf114[j]<-var(datosf114)
+  matf114[j,]<-datosf114
+}
+
+######### TM ##########
+
+ctap14<-rep(NA,100)
+cfap14<-rep(NA,100)
+
+for(i in 1:100){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf214<-mediasf114
+  varf214<-varf114
+  for(t in 1:1800){
+    xbartm1<-mean(mediasf214)
+    sdtm1<-sqrt(mean(varf214))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 980){
+      datosf2<-rnorm(5,1,1) 
+    }
+    if(t>980){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf214<-c(mediasf214,mean(datosf2))
+      varf214<-c(varf214,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=980){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>980){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap14[i]<-fa/1620 #falsas alarmas
+  ctap14[i]<-cs/180 #señales correctas
+  
+}
+
+
+######### TM ##########
+
+ctap14tm<-rep(NA,100)
+cfap14tm<-rep(NA,100)
+
+for(i in 1:100){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf214<-mediasf114
+  varf214<-varf114
+  for(t in 1:1800){
+    xbartm1<-TM(mediasf214)
+    sdtm1<-sqrt(TM(varf214))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 980){
+      datosf2<-rnorm(5,1,1) 
+    }
+    if(t>980){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf214<-c(mediasf214,mean(datosf2))
+      varf214<-c(varf214,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=980){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>980){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap14tm[i]<-fa/1620 #falsas alarmas
+  ctap14tm[i]<-cs/180 #señales correctas
+  
+}
+
+
+######### Mediana ##########
+
+ctap14med<-rep(NA,100)
+cfap14med<-rep(NA,100)
+
+for(i in 1:100){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf214<-mediasf114
+  varf214<-varf114
+  for(t in 1:1800){
+    xbartm1<-median(mediasf214)
+    sdtm1<-sqrt(median(varf214))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 980){
+      datosf2<-rnorm(5,1,1) 
+    }
+    if(t>980){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf214<-c(mediasf214,mean(datosf2))
+      varf214<-c(varf214,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=980){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>980){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap14med[i]<-fa/1620 #falsas alarmas
+  ctap14med[i]<-cs/180 #señales correctas
+  
+}
+
+
+######### Media recortada al 20 % ##########
+
+ctap14mr<-rep(NA,100)
+cfap14mr<-rep(NA,100)
+
+for(i in 1:100){
+  set.seed(i+1000)
+  fa<-0 #falsas alarmas
+  cs<-0 #señales correctas
+  m2<-200
+  mediasf214<-mediasf114
+  varf214<-varf114
+  for(t in 1:1800){
+    xbartm1<-mean(mediasf214,trim=0.2)
+    sdtm1<-sqrt(mean(varf214,trim=0.2))/c4(m2*(n-1)+1)
+    UCLtm1<-xbartm1+3*sdtm1/sqrt(n)
+    LCLtm1<-xbartm1-3*sdtm1/sqrt(n)
+    if(t>=1 & t<=800){ #Primeros 800 datos bajo control
+      datosf2<-rnorm(5,0,1) 
+    }
+    if(t > 800 & t <= 980){
+      datosf2<-rnorm(5,1,1) 
+    }
+    if(t>980){
+      datosf2<-rnorm(5,0,1)
+    }
+    
+    if(mean(datosf2)<UCLtm1 & mean(datosf2)>LCLtm1){
+      mediasf214<-c(mediasf214,mean(datosf2))
+      varf214<-c(varf214,var(datosf2))
+      m2<-m2+1
+    } else {
+      if(t>=1 & t<=800){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+      if(t > 800 & t<=980){
+        cs<-cs+1 #señal correcta porque está fuera de control
+      }
+      if(t>980){
+        fa<-fa+1 #falsa alarma porque está bajo control
+      }
+    }
+  }
+  cfap14mr[i]<-fa/1620 #falsas alarmas
+  ctap14mr[i]<-cs/180 #señales correctas
+  
+}
+
+
+
+
+
